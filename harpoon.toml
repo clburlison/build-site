@@ -1,0 +1,5 @@
+port = 9001
+addr = "0.0.0.0"
+
+[events."push:micromdm/micromdm:refs/heads/master"]
+cmd = "/build-site/make_release.sh"

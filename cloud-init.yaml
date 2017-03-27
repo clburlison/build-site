@@ -1,0 +1,90 @@
+#cloud-config
+# Upgrade all packages at startup
+package_upgrade: true
+package_upgrade: true
+package_reboot_if_required: true
+
+# Custom packages we want installed at startup
+packages:
+  - git
+  - curl
+  - docker.io
+  - zip
+
+# This is a simple output message so we can verify when the system has finished booting.
+# Viewable with: tail -f /var/log/cloud-init-output.log
+final_message: "The system is finally up, after $UPTIME seconds"
+
+# Add our build-site users
+users:
+  - name: clburlison
+    ssh-authorized-keys:
+     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDp/w9HQwuJBiazN7oUKKxk2Rw6Z0sT3xFqjTkeMICpKMm3arNOEeiOZUAn9JmVA29XrJjVqzlClKELjOR68MMwrVsipaVtE/T+XDBcgbLgO5CdEQxVSrG96S1IJWQDiaPDYZqgfx5YYlb0b1WO1D+KNiesJBbA/fgMP8rDXScsmMS35m/H/KeWdY4YJ8Y2JxfM5BaPakN+NK9NOM/3qlzz/gwKExnj99ofe7P4KUN51ltKF2BTY36tE6bFKPQ71g9IKiHK2yd4va0d/LV9p5IBnbPJ+9S58v2vLHrufnVBUTkugvGHytop8odpJjrZiVgZghn5dxz5/XZ/tTyLglNZ
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    shell: /bin/bash
+  - name: groob
+    ssh-authorized-keys:
+     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDp/w9HQwuJBiazN7oUKKxk2Rw6Z0sT3xFqjTkeMICpKMm3arNOEeiOZUAn9JmVA29XrJjVqzlClKELjOR68MMwrVsipaVtE/T+XDBcgbLgO5CdEQxVSrG96S1IJWQDiaPDYZqgfx5YYlb0b1WO1D+KNiesJBbA/fgMP8rDXScsmMS35m/H/KeWdY4YJ8Y2JxfM5BaPakN+NK9NOM/3qlzz/gwKExnj99ofe7P4KUN51ltKF2BTY36tE6bFKPQ71g9IKiHK2yd4va0d/LV9p5IBnbPJ+9S58v2vLHrufnVBUTkugvGHytop8odpJjrZiVgZghn5dxz5/XZ/tTyLglNZ
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    shell: /bin/bash
+
+# Create configuration files
+write_files:
+-   path: /etc/systemd/system/caddy.service
+    owner: root:root
+    permissions: 644
+    content: |
+        [Unit]
+        Description=Caddy Web Server
+        Documentation=https://caddyserver.com/docs
+        After=network.target
+
+        [Service]
+        User=root
+        WorkingDirectory=/build-site
+        LimitNOFILE=8192
+        PIDFile=/var/run/caddy/caddy.pid
+        ExecStart=/usr/local/bin/caddy -agree -pidfile=/var/run/caddy/caddy.pid
+        Restart=on-failure
+        StartLimitInterval=600
+
+        [Install]
+        WantedBy=multi-user.target
+-   path: /etc/systemd/system/harpoon.service
+    owner: root:root
+    permissions: 644
+    content: |
+        [Unit]
+        Description=Harpoon server for root user
+        Documentation=https://github.com/agrison/harpoon
+        After=network.target
+        AssertFileNotEmpty=/usr/local/bin/harpoon
+        AssertFileIsExecutable=/usr/local/bin/harpoon
+
+        [Service]
+        User=root
+        Type=simple
+        ExecStart=/usr/local/bin/harpoon -c /build-site/harpoon.toml
+        Nice=5
+
+        [Install]
+        WantedBy=multi-user.target
+
+
+runcmd:
+  # - sed -i -e '/^PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+  - systemctl restart sshd ssh
+  - ln -sf /usr/bin/docker.io /usr/local/bin/docker
+  - sed -i '$acomplete -F _docker docker' /etc/bash_completion.d/docker.io
+  - usermod -aG docker clburlison
+  - usermod -aG docker groob
+  - curl https://getcaddy.com | bash -s git
+  - git clone https://github.com/clburlison/built-site.git /build-site
+  - /build-site/make_harpoon.sh
+  - systemctl enable harpoon
+  - systemctl start harpoon
+  - systemctl enable caddy
+  - systemctl start caddy
+  - /build-site/make_release.sh

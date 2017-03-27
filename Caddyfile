@@ -1,0 +1,25 @@
+builds.clburlison.net {
+  tls github@clburlison.com
+  root www
+  browse / www/Caddyr/caddyr.tpl
+
+  rewrite / {
+    to /{uri}?sort=name&amp;order=desc
+    if {uri} not_has order
+    if {uri} not_has /Caddyr/
+    if {uri} not_has json
+    if {uri} not_has zip
+  }
+
+  errors {
+    * redirect.html
+  }
+
+  log access.log {
+    rotate {
+        size 100 # Rotate after 100 MB
+        age  14  # Keep log files for 14 days
+        keep 10  # Keep at most 10 log files
+    }
+  }
+}
