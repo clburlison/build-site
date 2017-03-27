@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>MicroMDM Builds</title>
     <link rel="stylesheet" href="/Caddyr/style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="/Caddyr/app.js" type="text/javascript" charset="utf-8"></script>
     <link rel="shortcut icon" type="image/x-icon" href="https://micromdm.io/images/favicon.ico">
     <link rel="icon" type="image/x-icon" href="https://micromdm.io/images/favicon.ico">
@@ -70,7 +71,9 @@
               </td>
               <td>
                 <script>
-                  document.write(prettyDate("{{.ModTime}}"));
+                  var UtcDate = moment.utc("{{.ModTime}}", "YYYY-MM-DD HH:mm:ss.SSS Z").toDate();
+                  var localDate = moment(UtcDate).local().format('YYYY-MM-DD HH:mm:ss');
+                  document.write(localDate);
                 </script>
               </td>
               <td align="right">
