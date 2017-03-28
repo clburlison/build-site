@@ -5,22 +5,19 @@
 set -x
 source_path=$(dirname "${0}"); cd "${source_path}"
 
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+VERSION="$(build/micromdm-linux-amd64 version | awk '{print $3}')"
+else
+echo "This script needs to be ran on a Linux host."
+exit 1
+fi
 docker pull golang:1.8
 docker run --rm -v "$(pwd)"/go:/go \
   -v "$(pwd)"/micromdm_build.sh:/micromdm_build.sh \
   golang:1.8 \
   /micromdm_build.sh
-
 cd go/src/github.com/micromdm/micromdm
-
-unamestr=`uname`
-if [[ "$unamestr" == 'Linux' ]]; then
-  VERSION="$(build/micromdm-linux-amd64 version | awk '{print $3}')"
-elif [[ "$unamestr" == 'Darwin' ]]; then
-  VERSION="$(build/micromdm-darwin-amd64 version | awk '{print $3}')"
-else
-  exit 1
-fi
 zip -r "$VERSION".zip build
 
 # This sed command does not provide a Darwin safe json file
