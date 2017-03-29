@@ -38,13 +38,13 @@ zip -r /tmp/"$VERSION"/"$VERSION".zip build
 
 MD5_HASH=$(md5sum /tmp/"$VERSION"/"$VERSION".zip | awk '{ print $1 }')
 
-# write info.html
+# write info.html. The sed command is not portable and does not work on Darwin
 cat << EOF > /tmp/"$VERSION"/info.html
 <text class="info">
 <br>$(git --no-pager show -s --format='%an') - $(git --no-pager show -s --format='%ad' --date=short)<br><br>
-Commit Message: $(git --no-pager log -1 --pretty=%B)<br><br>
+$(git --no-pager log -1 --pretty=%B | sed -E ':a;N;$!ba;s/\r{0,1}\n/\<br>/g')<br>
 More details: <a href="https://github.com/micromdm/micromdm/commit/$(git rev-parse HEAD)">$(git rev-parse HEAD)</a><br><br>
-MD5: $(MD5_HASH)
+MD5: $MD5_HASH
 </text>
 EOF
 
@@ -52,7 +52,7 @@ EOF
 echo $MD5_HASH > /tmp/"$VERSION"/MD5
 
 # move build log
-mv "${source_path}"/build.log > /tmp/"$VERSION"/build.log
+mv /build-site/build.log > /tmp/"$VERSION"/build.log
 
-mv /tmp/"$VERSION" ../../../../../www/
+mv /tmp/"$VERSION" /build-site/www/
 rm -rf /tmp/"$VERSION"
