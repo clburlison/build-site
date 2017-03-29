@@ -36,7 +36,7 @@ rm -rf /tmp/"$VERSION"
 mkdir -p /tmp/"$VERSION"
 zip -r /tmp/"$VERSION"/"$VERSION".zip build
 
-MD5_HASH=$(md5 -q /tmp/"$VERSION"/"$VERSION".zip)
+MD5_HASH=$(md5sum /tmp/"$VERSION"/"$VERSION".zip | awk '{ print $1 }')
 
 # write info.html
 cat << EOF > /tmp/"$VERSION"/info.html
@@ -52,7 +52,7 @@ EOF
 echo $MD5_HASH > /tmp/"$VERSION"/MD5
 
 # move build log
-mv ./build.log > /tmp/"$VERSION"/
+mv ./build.log > /tmp/"$VERSION"/build.log
 
 mv /tmp/"$VERSION" ../../../../../www/
 rm -rf /tmp/"$VERSION"
