@@ -52,7 +52,7 @@ EOF
 echo $MD5_HASH > /tmp/"$VERSION"/MD5
 
 # move build log
-mv ./build.log > /tmp/"$VERSION"/build.log
+mv "${source_path}"/build.log > /tmp/"$VERSION"/build.log
 
 mv /tmp/"$VERSION" ../../../../../www/
 rm -rf /tmp/"$VERSION"
