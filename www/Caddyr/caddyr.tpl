@@ -7,16 +7,17 @@
     <link rel="stylesheet" href="/Caddyr/style.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="/Caddyr/app.js" type="text/javascript" charset="utf-8"></script>
-    <link rel="shortcut icon" type="image/x-icon" href="https://micromdm.io/images/favicon.ico">
-    <link rel="icon" type="image/x-icon" href="https://micromdm.io/images/favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/Caddyr/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/Caddyr/favicon.ico">
+    <link rel="import" href="info.html">
   </head>
   <body>
-    <h1><a href="http://builds.clburlison.net/">MicroMDM Builds</a></h1>
+    <h1><a href="https://builds.clburlison.net/">MicroMDM Builds</a></h1>
     <center>
       These are automated development builds from the master Git branch for testing purposes.<br>
       Visit the Github project <u><a href="https://github.com/micromdm/micromdm">micromdm</a></u>.
     </center>
-    <div class="wrapper">
+    <div class="wrapper" id="main_listing">
       <form>
         <input id="searchTerm" name="filter" type="search" autocapitalize="none" onkeyup="doSearch()">
       </form>
@@ -51,23 +52,24 @@
           {{if ne .Name "Caddyr"}}
           {{if ne .Name ".gitignore"}}
           {{if ne .Name ".DS_Store"}}
-          {{if ne .Name "redirect.html"}}
+          {{if ne .Name "404.html"}}
+          {{if ne .Name "info.html"}}
           {{if not .IsDir}}
-          <a class="play" href="intent:{{.URL}}#Intent;scheme=file;action=android.intent.action.VIEW;end;"target="_blank">
+          <a class="play" href="intent:{{html .URL}}#Intent;scheme=file;action=android.intent.action.VIEW;end;"target="_blank">
             {{end}}
             <tr>
               <td valign="top">
-                <a href="{{.URL}}">
+                <a href="{{html .URL}}">
                   {{if .IsDir}}
                   <img src="/Caddyr/icons/dir.png" alt="[IMG]"></a>
                 {{else}}
                 <script>
-                  document.write('<img src="/Caddyr/icons/'+extension("{{.Name}}")+'.png" alt="[IMG]" onerror="this.src=\'/Caddyr/icons/default.png\'"/>');
+                  document.write('<img src="/Caddyr/icons/'+extension("{{html .Name}}")+'.png" alt="[IMG]" onerror="this.src=\'/Caddyr/icons/default.png\'"/>');
                 </script>
                 {{end}}
               </td>
               <td>
-                <a href="{{.URL}}">{{.Name}}</a>
+                <a href="{{html .URL}}">{{html .Name}}</a>
               </td>
               <td>
                 <script>
@@ -94,8 +96,18 @@
         {{end}}
         {{end}}
         {{end}}
+        {{end}}
       </tbody>
     </table>
+
+    <!-- Idea from http://www.onextrapixel.com/html5-imports-embedding-an-html-file-inside-another-html-file/ -->
+    <script>
+      var doc = document.querySelector('link[rel="import"]').import;
+      var text = doc.querySelector('.info');
+      var node = document.getElementById('main_listing');
+      node.appendChild(text.cloneNode(true));
+    </script>
+
   </div>
 </body>
 <footer>
@@ -103,9 +115,5 @@
   <a href="https://icons8.com">Icon pack by Icons8</a> |
   Powered by <a href="https://caddyserver.com/">Caddy</a>
 </footer>
-
-<script type="text/javascript" charset="utf-8">
-  console.log(window.location);
-</script>
 </html>
 <!-- vim:set ft=html: -->
